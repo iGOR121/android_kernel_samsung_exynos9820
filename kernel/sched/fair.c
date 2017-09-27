@@ -6944,6 +6944,19 @@ wake_affine_weight(struct sched_domain *sd, struct task_struct *p,
 	return this_eff_load <= prev_eff_load;
 }
 
+static bool
+wake_affine_idle(struct sched_domain *sd, struct task_struct *p,
+		 int this_cpu, int prev_cpu, int sync)
+{
+	if (idle_cpu(this_cpu))
+		return true;
+
+	if (sync && cpu_rq(this_cpu)->nr_running == 1)
+		return true;
+
+	return false;
+}
+
 static int wake_affine(struct sched_domain *sd, struct task_struct *p,
 		       int prev_cpu, int sync)
 {
@@ -6955,6 +6968,7 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p,
 
 	if (sched_feat(WA_WEIGHT) && !affine)
 		affine = wake_affine_weight(sd, p, this_cpu, prev_cpu, sync);
+
 
 	schedstat_inc(p->se.statistics.nr_wakeups_affine_attempts);
 	if (affine) {
