@@ -6969,7 +6969,6 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p,
 	if (sched_feat(WA_WEIGHT) && !affine)
 		affine = wake_affine_weight(sd, p, this_cpu, prev_cpu, sync);
 
-
 	schedstat_inc(p->se.statistics.nr_wakeups_affine_attempts);
 	if (affine) {
 		schedstat_inc(sd->ttwu_move_affine);
