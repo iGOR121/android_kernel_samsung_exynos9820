@@ -1830,9 +1830,6 @@ static inline int hrtick_enabled(struct rq *rq)
 
 #endif /* CONFIG_SCHED_HRTICK */
 
-#ifdef CONFIG_SMP
-extern void sched_avg_update(struct rq *rq);
-
 #ifndef arch_scale_freq_capacity
 static __always_inline
 unsigned long arch_scale_freq_capacity(int cpu)
@@ -1841,13 +1838,8 @@ unsigned long arch_scale_freq_capacity(int cpu)
 }
 #endif
 
-#ifndef arch_scale_max_freq_capacity
-static __always_inline
-unsigned long arch_scale_max_freq_capacity(struct sched_domain *sd, int cpu)
-{
-	return SCHED_CAPACITY_SCALE;
-}
-#endif
+#ifdef CONFIG_SMP
+extern void sched_avg_update(struct rq *rq);
 
 #ifndef arch_scale_cpu_capacity
 static __always_inline
@@ -1883,6 +1875,13 @@ static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta)
 	sched_avg_update(rq);
 }
 #else
+#ifndef arch_scale_cpu_capacity
+static __always_inline
+unsigned long arch_scale_cpu_capacity(void __always_unused *sd, int cpu)
+{
+	return SCHED_CAPACITY_SCALE;
+}
+#endif
 static inline void sched_rt_avg_update(struct rq *rq, u64 rt_delta) { }
 static inline void sched_avg_update(struct rq *rq) { }
 #endif
