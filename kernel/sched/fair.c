@@ -7575,7 +7575,7 @@ static inline int __select_idle_sibling(struct task_struct *p, int prev, int tar
 	return target;
 }
 
-static inline int select_idle_sibling_cstate_aware(struct task_struct *p, int prev, int target)
+static inline unsigned long select_idle_sibling_cstate_aware(struct task_struct *p, int prev, int target)
 {
 	struct sched_domain *sd;
 	struct sched_group *sg;
@@ -7640,7 +7640,7 @@ static inline int select_idle_sibling_cstate_aware(struct task_struct *p, int pr
 	return target;
 }
 
-static int select_idle_sibling(struct task_struct *p, int prev, int target)
+static unsigned long select_idle_sibling(struct task_struct *p, int prev, int target)
 {
 	if (!sysctl_sched_cstate_aware)
 		return __select_idle_sibling(p, prev, target);
@@ -7648,7 +7648,7 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
 	return select_idle_sibling_cstate_aware(p, prev, target);
 }
 
-static inline int task_fits_capacity(struct task_struct *p, long capacity)
+static inline unsigned long task_fits_capacity(struct task_struct *p, long capacity)
 {
 	return capacity * 1024 > boosted_task_util(p) * capacity_margin;
 }
