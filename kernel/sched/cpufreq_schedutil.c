@@ -21,8 +21,6 @@
 
 unsigned long boosted_cpu_util(int cpu);
 
-#define SUGOV_KTHREAD_PRIORITY	50
-
 struct sugov_tunables {
 	struct gov_attr_set attr_set;
 	unsigned int up_rate_limit_us;
