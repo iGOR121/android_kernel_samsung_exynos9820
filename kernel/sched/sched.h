@@ -746,6 +746,7 @@ struct rq {
 #ifdef CONFIG_SMP
 	unsigned long		last_load_update_tick;
 	unsigned long		last_blocked_load_update_tick;
+	unsigned int		has_blocked_load;
 #endif /* CONFIG_SMP */
 	unsigned long nohz_flags;
 #endif /* CONFIG_NO_HZ_COMMON */
