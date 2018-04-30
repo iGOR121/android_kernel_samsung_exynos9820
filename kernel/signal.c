@@ -1896,6 +1896,8 @@ static void ptrace_stop(int exit_code, int why, int clear_code, siginfo_t *info)
 		spin_lock_irq(&current->sighand->siglock);
 	}
 
+	set_special_state(TASK_TRACED);
+
 	/*
 	 * schedule() will not sleep if there is a pending signal that
 	 * can awaken the task.
