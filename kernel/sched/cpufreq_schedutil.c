@@ -209,6 +209,11 @@ static void sugov_get_util(struct sugov_cpu *sg_cpu)
 
 static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
 {
+	struct rq *rq = cpu_rq(sg_cpu->cpu);
+
+	if (rt_rq_is_runnable(&rq->rt))
+		return sg_cpu->max;
+
 	/*
 	 * Ideally we would like to set util_dl as min/guaranteed freq and
 	 * util_cfs + util_dl as requested freq. However, cpufreq is not yet
