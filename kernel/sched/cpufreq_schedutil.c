@@ -62,12 +62,7 @@ struct sugov_cpu {
 	unsigned int iowait_boost_max;
 	u64 last_update;
 
-	/* The fields below are only needed when sharing a policy: */
-	unsigned long		util_cfs;
-	unsigned long		util_dl;
 	unsigned long		bw_dl;
-	unsigned long		util_rt;
-	unsigned long		util_irq;
 	unsigned long		max;
 
 	/* The field below is for single-CPU policies only. */
@@ -201,37 +196,31 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
 	return cpufreq_driver_resolve_freq(policy, freq);
 }
 
-static void sugov_get_util(struct sugov_cpu *sg_cpu)
-{
-
-	sg_cpu->max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
-	sg_cpu->util_cfs = cpu_util_cfs(rq);
-	sg_cpu->util_dl  = cpu_util_dl(rq);
-	sg_cpu->bw_dl    = cpu_bw_dl(rq);
-	sg_cpu->util_rt  = cpu_util_rt(rq);
-	sg_cpu->util_irq = cpu_util_irq(rq);
-}
-
-static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
+static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 {
 	struct rq *rq = cpu_rq(sg_cpu->cpu);
-	unsigned long util, max = sg_cpu->max;
+	unsigned long util, irq, max;
+
+	sg_cpu->max = max = arch_scale_cpu_capacity(NULL, sg_cpu->cpu);
+	sg_cpu->bw_dl = cpu_bw_dl(rq);
 
 	if (rt_rq_is_runnable(&rq->rt))
-		return sg_cpu->max;
+		return max;
 
-	if (unlikely(sg_cpu->util_irq >= max))
+	irq = cpu_util_irq(rq);
+
+	if (unlikely(irq >= max))
 		return max;
 
 	/* Sum rq utilization */
-	util = sg_cpu->util_cfs;
-	util += sg_cpu->util_rt;
+	util = cpu_util_cfs(rq);
+	util += cpu_util_rt(rq);
 
 	/*
 	 * Interrupt time is not seen by RQS utilization so we can compare
 	 * them with the CPU capacity
 	 */
-	if ((util + sg_cpu->util_dl) >= max)
+	if ((util + cpu_util_dl(rq)) >= max)
 		return max;
 
 	/*
@@ -249,11 +238,11 @@ static unsigned long sugov_aggregate_util(struct sugov_cpu *sg_cpu)
 	 */
 
 	/* Weight RQS utilization to normal context window */
-	util *= (max - sg_cpu->util_irq);
+	util *= (max - irq);
 	util /= max;
 
 	/* Add interrupt utilization */
-	util += sg_cpu->util_irq;
+	util += irq;
 
 	/* Add DL bandwidth requirement */
 	util += sg_cpu->bw_dl;
@@ -364,8 +353,28 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
 
 	busy = sugov_cpu_is_busy(sg_cpu);
 
-	if (flags & SCHED_CPUFREQ_RT) {
-		next_f = policy->cpuinfo.max_freq;
+	util = sugov_get_util(sg_cpu);
+	max = sg_cpu->max;
+	sugov_iowait_apply(sg_cpu, time, &util, &max);
+	next_f = get_next_freq(sg_policy, util, max);
+	/*
+	 * Do not reduce the frequency if the CPU has not been idle
+	 * recently, as the reduction is likely to be premature then.
+	 */
+	if (busy && next_f < sg_policy->next_freq) {
+		next_f = sg_policy->next_freq;
+
+		/* Reset cached freq as next_freq has changed */
+		sg_policy->cached_raw_freq = 0;
+	}
+
+	/*
+	 * This code runs under rq->lock for the target CPU, so it won't run
+	 * concurrently on two different CPUs for the same target and it is not
+	 * necessary to acquire the lock in the fast switch case.
+	 */
+	if (sg_policy->policy->fast_switch_enabled) {
+		sugov_fast_switch(sg_policy, time, next_f);
 	} else {
 		sugov_get_util(sg_cpu);
 		max = sg_cpu->max;
@@ -420,8 +429,10 @@ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
 		if (j_sg_cpu->flags & SCHED_CPUFREQ_RT)
 			return policy->cpuinfo.max_freq;
 
+		j_util = sugov_get_util(j_sg_cpu);
 		j_max = j_sg_cpu->max;
-		j_util = sugov_aggregate_util(j_sg_cpu);
+		sugov_iowait_apply(j_sg_cpu, time, &j_util, &j_max);
+
 		if (j_util * max > j_max * util) {
 			util = j_util;
 			max = j_max;
