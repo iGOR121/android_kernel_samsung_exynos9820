@@ -1875,6 +1875,7 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 	struct s_data d;
 	int i, ret = -ENOMEM;
 	struct sched_domain_topology_level *tl_asym;
+	bool has_asym = false;
 
 	alloc_state = __visit_domain_allocation_hell(&d, cpu_map);
 	if (alloc_state != sa_rootdomain)
@@ -1890,8 +1891,10 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 		for_each_sd_topology(tl) {
 			int dflags = 0;
 
-			if (tl == tl_asym)
+			if (tl == tl_asym) {
 				dflags |= SD_ASYM_CPUCAPACITY;
+				has_asym = true;
+			}
 
 			sd = build_sched_domain(tl, cpu_map, attr, sd, dflags, i);
 
@@ -1952,6 +1955,9 @@ build_sched_domains(const struct cpumask *cpu_map, struct sched_domain_attr *att
 
 	if (!cpumask_empty(cpu_map))
 		update_asym_cpucapacity(cpumask_first(cpu_map));
+
+	if (has_asym)
+		static_branch_enable_cpuslocked(&sched_asym_cpucapacity);
 
 	ret = 0;
 error:
