@@ -885,7 +885,6 @@ asmlinkage __visible void __init start_kernel(void)
 	random_init(command_line);
 	boot_init_stack_canary();
 
-	sched_clock_init();
 	printk_safe_init();
 	perf_event_init();
 	profile_init();
@@ -930,6 +929,7 @@ asmlinkage __visible void __init start_kernel(void)
 	numa_policy_init();
 	if (late_time_init)
 		late_time_init();
+	sched_clock_init();
 	calibrate_delay();
 
 	arch_cpu_finalize_init();
