@@ -278,6 +278,8 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 	 * an interface. So, we only do the latter for now.
 	 */
 	return min(max, util + sg_cpu->bw_dl);
+
+	*util = uclamp_util(rq, *util);
 }
 
 static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time)
