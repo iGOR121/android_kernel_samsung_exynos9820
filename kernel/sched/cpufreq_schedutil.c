@@ -279,7 +279,7 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
 	 */
 	return min(max, util + sg_cpu->bw_dl);
 
-	*util = uclamp_util_with(rq, *util, NULL);
+	*util = uclamp_rq_util_with(rq, *util, NULL);
 }
 
 static void sugov_set_iowait_boost(struct sugov_cpu *sg_cpu, u64 time)
