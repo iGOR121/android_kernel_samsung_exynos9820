@@ -3278,8 +3278,6 @@ void factory_execute_monitor(int type)
 #endif
 
 #if defined(CONFIG_USB_AUDIO_ENHANCED_DETECT_TIME)
-static struct kpp kpp_ta;
-static struct kpp kpp_fg;
 
 static void remove_qos(void *req)
 {
@@ -3335,9 +3333,6 @@ void max77705_clk_booster_set(void *data, int on)
 				PM_QOS_BUS_THROUGHPUT_MAX_DEFAULT_VALUE);
 		usbpd_data->set_booster = true;
 
-		kpp_request(STUNE_TOPAPP, &kpp_ta, 2);
-		kpp_request(STUNE_FOREGROUND, &kpp_fg, 2);
-
 		schedule_delayed_work(&usbpd_data->acc_booster_off_work,
 			msecs_to_jiffies(CLK_BOOSTER_OFF_WAIT_MS));
 	} else {
@@ -3363,8 +3358,6 @@ void max77705_clk_booster_off(struct work_struct *wk)
 	remove_qos(&usbpd_data->cpu1_qos);
 	remove_qos(&usbpd_data->cpu2_qos);
 	remove_qos(&usbpd_data->mif_qos);
-	kpp_request(STUNE_TOPAPP, &kpp_ta, 0);
-	kpp_request(STUNE_FOREGROUND, &kpp_fg, 0);
 	msg_maxim("[PDIC Booster]-");
 
 }

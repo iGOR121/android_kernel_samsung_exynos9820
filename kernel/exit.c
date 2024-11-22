@@ -63,8 +63,6 @@
 #include <linux/rcuwait.h>
 #include <linux/compat.h>
 #include <linux/sysfs.h>
-#include <linux/cpufreq_times.h>
-#include <linux/ems.h>
 
 #include <linux/uaccess.h>
 #include <asm/unistd.h>
@@ -877,7 +875,6 @@ void __noreturn do_exit(long code)
 	}
 
 	exit_signals(tsk);  /* sets PF_EXITING */
-	sync_band(tsk, LEAVE_BAND);
 
 	/*
 	 * Ensure that all new tsk->pi_lock acquisitions must observe

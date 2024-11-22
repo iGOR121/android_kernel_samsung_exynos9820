@@ -25,7 +25,6 @@
 #include <linux/usb/typec.h>
 #endif
 #if defined(CONFIG_USB_AUDIO_ENHANCED_DETECT_TIME)
-#include <linux/ems_service.h>
 #include <linux/pm_qos.h>
 #endif
 

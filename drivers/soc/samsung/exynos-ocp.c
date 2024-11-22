@@ -28,7 +28,6 @@
 
 #include "../../../kernel/sched/sched.h"
 #include "../../cpufreq/exynos-acme.h"
-#include "../../../kernel/sched/ems/ems.h"
 
 #define GCU_BASE_ADDR			(0x1E4C0000)
 

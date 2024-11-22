@@ -17,7 +17,6 @@
 #include <linux/cpumask.h>
 #include <linux/cpufreq.h>
 #include <linux/pm_opp.h>
-#include <linux/ems_service.h>
 #include <linux/exynos-ucc.h>
 
 #include <soc/samsung/exynos-cpuhp.h>
@@ -100,9 +99,6 @@ static ssize_t show_cpufreq_min_limit(struct kobject *kobj,
 	return snprintf(buf, 10, "%u\n",
 		first_domain()->min_freq >> (scale * SCALE_SIZE));
 }
-
-static struct kpp kpp_ta;
-static struct kpp kpp_fg;
 
 static struct ucc_req ucc_req =
 {
@@ -208,8 +204,6 @@ static ssize_t store_cpufreq_min_limit(struct kobject *kobj,
 		/* Clear all constraint by cpufreq_min_limit */
 		if (input < 0) {
 			pm_qos_update_request(&domain->user_min_qos_req, 0);
-			kpp_request(STUNE_TOPAPP, &kpp_ta, 0);
-			kpp_request(STUNE_FOREGROUND, &kpp_fg, 0);
 			ucc_requested_val = 0;
 			ucc_update_request(&ucc_req, ucc_requested_val);
 			continue;
@@ -248,13 +242,9 @@ static ssize_t store_cpufreq_min_limit(struct kobject *kobj,
 		pm_qos_update_request(&domain->user_min_qos_req, freq);
 
 		if ((domain->user_boost == 3) && sse_mode_game) {
-			kpp_request(STUNE_TOPAPP, &kpp_ta, domain->user_boost_game);
-			kpp_request(STUNE_FOREGROUND, &kpp_fg, domain->user_boost_game);
 			ucc_requested_val = domain->ucc_index;
 			ucc_update_request(&ucc_req, ucc_requested_val);
 		} else {
-			kpp_request(STUNE_TOPAPP, &kpp_ta, domain->user_boost);
-			kpp_request(STUNE_FOREGROUND, &kpp_fg, domain->user_boost);
 			ucc_requested_val = domain->ucc_index;
 			ucc_update_request(&ucc_req, ucc_requested_val);
 		}
