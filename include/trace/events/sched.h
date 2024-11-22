@@ -869,35 +869,6 @@ TRACE_EVENT(sched_load_se,
 );
 
 /*
- * Tracepoint for task_group load tracking:
- */
-#ifdef CONFIG_FAIR_GROUP_SCHED
-TRACE_EVENT(sched_load_tg,
-
-	TP_PROTO(struct cfs_rq *cfs_rq),
-
-	TP_ARGS(cfs_rq),
-
-	TP_STRUCT__entry(
-		__field(	int,	cpu				)
-		__dynamic_array(char,	path,
-				__trace_sched_path(cfs_rq, NULL, 0)	)
-		__field(	long,	load				)
-	),
-
-	TP_fast_assign(
-		__entry->cpu	= cfs_rq->rq->cpu;
-		__trace_sched_path(cfs_rq, __get_dynamic_array(path),
-				   __get_dynamic_array_len(path));
-		__entry->load	= atomic_long_read(&cfs_rq->tg->load_avg);
-	),
-
-	TP_printk("cpu=%d path=%s load=%ld", __entry->cpu, __get_str(path),
-		  __entry->load)
-);
-#endif /* CONFIG_FAIR_GROUP_SCHED */
-
-/*
  * Tracepoint for accounting CPU  boosted utilization
  */
 TRACE_EVENT(sched_boost_cpu,
