@@ -869,7 +869,6 @@ struct rq {
 
 	unsigned int clock_update_flags;
 	u64 clock;
-	u64 clock_task;
 	/* Ensure that all clocks are in the same cache line */
 	u64			clock_task ____cacheline_aligned;
 	u64			clock_pelt;
@@ -1965,18 +1964,12 @@ static inline unsigned long capacity_of(int cpu)
 	return cpu_rq(cpu)->cpu_capacity;
 }
 
-static inline unsigned long capacity_orig_of(int cpu)
-{
-	return cpu_rq(cpu)->cpu_capacity_orig;
-}
-
 extern unsigned int sysctl_sched_use_walt_cpu_util;
 extern unsigned int walt_ravg_window;
 extern bool walt_disabled;
 
 #endif /* CONFIG_SMP */
 
-#endif
 
 #ifdef CONFIG_SMP
 #ifdef CONFIG_PREEMPT

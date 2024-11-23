@@ -8,6 +8,8 @@
 #include <linux/sched/numa_balancing.h>
 #include <linux/tracepoint.h>
 #include <linux/binfmts.h>
+#include <linux/sched.h>
+#include "../../../kernel/sched/sched.h"
 
 /*
  * Tracepoint for calling kthread_stop, performed to end a kthread:
@@ -1164,9 +1166,12 @@ int __trace_sched_path(struct cfs_rq *cfs_rq, char *path, int len)
 #ifdef CONFIG_FAIR_GROUP_SCHED
 	int l = path ? len : 0;
 
+#ifdef CONFIG_SCHED_AUTOGROUP
 	if (cfs_rq && task_group_is_autogroup(cfs_rq->tg))
 		return autogroup_path(cfs_rq->tg, path, l) + 1;
-	else if (cfs_rq && cfs_rq->tg->css.cgroup)
+	else 
+#endif
+	if (cfs_rq && cfs_rq->tg->css.cgroup)
 		return cgroup_path(cfs_rq->tg->css.cgroup, path, l) + 1;
 #endif
 	if (path)
@@ -1374,7 +1379,6 @@ TRACE_EVENT(sched_util_est_cpu,
 		  __entry->util_avg,
 		  __entry->util_est_enqueued)
 );
-#endif /* CONFIG_SMP */
 #endif /* _TRACE_SCHED_H */
 
 /* This part must be outside protection */
