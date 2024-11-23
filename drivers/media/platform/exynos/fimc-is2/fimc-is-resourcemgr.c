@@ -74,11 +74,6 @@
 struct gb_qos_request gb_req = {
 	.name = "camera_ehmp_boost",
 };
-#elif defined(CONFIG_SCHED_EMS)
-#include <linux/ems.h>
-struct gb_qos_request gb_req = {
-	.name = "camera_ems_boost",
-};
 #endif
 
 #define DEBUG_LEVEL_LOW 0
