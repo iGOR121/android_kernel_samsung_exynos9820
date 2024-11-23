@@ -34,8 +34,6 @@
 #endif
 #if defined(CONFIG_SCHED_EHMP)
 #include <linux/ehmp.h>
-#elif defined(CONFIG_SCHED_EMS)
-#include <linux/ems.h>
 #endif
 
 #include "fimc-is-core.h"
@@ -60,7 +58,7 @@ extern struct pm_qos_request exynos_isp_qos_cam;
 extern struct pm_qos_request exynos_isp_qos_mem;
 extern struct pm_qos_request exynos_isp_qos_hpg;
 
-#if defined(CONFIG_SCHED_EHMP) || defined(CONFIG_SCHED_EMS)
+#if defined(CONFIG_SCHED_EHMP)
 extern struct gb_qos_request gb_req;
 #endif
 
@@ -2828,7 +2826,7 @@ int fimc_is_sensor_runtime_suspend(struct device *dev)
 #if defined(CONFIG_HMP_VARIABLE_SCALE)
 		if (core->resourcemgr.dvfs_ctrl.cur_hmp_bst)
 			set_hmp_boost(0);
-#elif defined(CONFIG_SCHED_EHMP) || defined(CONFIG_SCHED_EMS)
+#elif defined(CONFIG_SCHED_EHMP)
 		if (core->resourcemgr.dvfs_ctrl.cur_hmp_bst)
 			gb_qos_update_request(&gb_req, 0);
 #endif
