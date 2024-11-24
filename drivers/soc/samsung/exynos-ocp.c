@@ -235,7 +235,7 @@ static bool is_cpuutil_condition(void)
 	capacity = capacity_orig_of(data->cpu);
 
 	for_each_cpu(cpu, &data->cpus) {
-		util += ml_cpu_util(cpu);
+		util += cpu_util(cpu);
 		count++;
 	}
 
